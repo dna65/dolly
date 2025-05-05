@@ -41,9 +41,11 @@ dolly_addressing_mode get_amode(const dolly_asm_instruction* instr,
     case DOLLY_ASM_OPERAND_ACCUMULATOR:
         return ACCUMULATOR;
     case DOLLY_ASM_OPERAND_IMMEDIATE_INT:
-        return value > UINT8_MAX ? DOLLY_INVALID_ADDR_MODE : IMMEDIATE;
+        return (value > UINT8_MAX && (int16_t)value < INT8_MIN)
+                ? DOLLY_INVALID_ADDR_MODE : IMMEDIATE;
     case DOLLY_ASM_OPERAND_IMMEDIATE_IDEN:
-        return (is_label || value > UINT8_MAX) ? DOLLY_INVALID_ADDR_MODE : IMMEDIATE;
+        return (is_label || (value > UINT8_MAX && (int16_t)value < INT8_MIN))
+                ? DOLLY_INVALID_ADDR_MODE : IMMEDIATE;
     case DOLLY_ASM_OPERAND_INDIRECT_INT:
     case DOLLY_ASM_OPERAND_INDIRECT_IDEN:
         return INDIRECT;
