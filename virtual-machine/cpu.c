@@ -60,6 +60,7 @@ static bool dolly_cpu_should_branch(const dolly_cpu* cpu, dolly_instruction bran
     case BCS: return cpu->flags.carry    == true;
     case BNE: return cpu->flags.zero     == false;
     case BEQ: return cpu->flags.zero     == true;
+    case BRA: return true;
     default:  return false;
     }
 }
@@ -205,6 +206,7 @@ int dolly_cpu_read_instruction(dolly_cpu* cpu, const uint8_t* instruction,
     case BCS:
     case BNE:
     case BEQ:
+    case BRA:
         *advance_by = dolly_cpu_should_branch(cpu, op.instr)
                     ? relative_target_value + 2 : 2;
         return 2 + (*advance_by != 0 ? 1 : 0) + (page_crossed_branch ? 2 : 0);

@@ -91,6 +91,7 @@ void init_instruction_table(void)
     tb_hash_table_add_int(&INSTRUCTION_TABLE, "SEC", SEC);
     tb_hash_table_add_int(&INSTRUCTION_TABLE, "LDA", LDA);
     tb_hash_table_add_int(&INSTRUCTION_TABLE, "CLD", CLD);
+    tb_hash_table_add_int(&INSTRUCTION_TABLE, "BRA", BRA);
 }
 
 static bool dolly_asm_parse_string(dolly_asm_context* ctx,

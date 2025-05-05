@@ -27,7 +27,7 @@ const dolly_addressing_mode family_modes_3[] = {
     DOLLY_INVALID_ADDR_MODE, ZERO_PAGE_X, DOLLY_INVALID_ADDR_MODE, ABSOLUTE_X
 };
 
-const dolly_instruction branches[] = {
+const dolly_instruction conditional_branches[] = {
     BPL, BMI, BVC, BVS, BCC, BCS, BNE, BEQ
 };
 
@@ -50,7 +50,7 @@ dolly_opcode dolly_resolve_opcode(uint8_t opcode_byte)
     uint8_t family      =  opcode_byte & 0b00000011;
     uint8_t addr_mode   = (opcode_byte & 0b00011100) >> 2;
     uint8_t instr       = (opcode_byte & 0b11100000) >> 5;
-    bool is_branch      = (opcode_byte & 0b00011111) == 0b00010000;
+    bool is_cond_branch = (opcode_byte & 0b00011111) == 0b00010000;
     // Group 4 encompasses INY, INX, DEY, DEX, TAY, TYA, the set/clear flag
     // and the push/pull stack instructions
     bool is_group_4     = (opcode_byte & 0b00001111) == 0b00001000;
@@ -62,8 +62,8 @@ dolly_opcode dolly_resolve_opcode(uint8_t opcode_byte)
         .a_mode = DOLLY_INVALID_ADDR_MODE
     };
 
-    if (is_branch) {
-        result.instr = branches[instr];
+    if (is_cond_branch) {
+        result.instr = conditional_branches[instr];
         result.a_mode = RELATIVE;
         return result;
     }
@@ -96,6 +96,10 @@ dolly_opcode dolly_resolve_opcode(uint8_t opcode_byte)
     case 0x60:
         result.instr = RTS;
         result.a_mode = IMPLICIT;
+        return result;
+    case 0x80:
+        result.instr = BRA;
+        result.a_mode = RELATIVE;
         return result;
     default:
         break;
@@ -237,6 +241,7 @@ const char* dolly_get_instr_name(dolly_instruction instr)
     case CLD: return "CLD";
     case SED: return "SED";
     case NOP: return "NOP";
+    case BRA: return "BRA";
     default:  return "~~~";
     }
 }
@@ -272,6 +277,7 @@ bool dolly_is_branch(dolly_instruction instr)
     case BCS:
     case BNE:
     case BEQ:
+    case BRA:
         return true;
     default:
         return false;

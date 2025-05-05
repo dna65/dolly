@@ -6,7 +6,7 @@
 #define DOLLY_INVALID_ADDR_MODE 0
 #define DOLLY_INVALID_INSTRUCTION -1
 
-#define DOLLY_6502_INSTRUCTION_COUNT 56
+#define DOLLY_6502_INSTRUCTION_COUNT 57
 
 enum dolly_addressing_mode
 {
@@ -33,6 +33,7 @@ enum dolly_instruction
     CLI, CLV, CMP, CPX, CPY, DEC, DEX, DEY, EOR, INC, INX, INY, JMP, JSR,
     LDX, LDY, LSR, NOP, ORA, PHA, PHP, PLA, PLP, ROL, ROR, RTI, RTS, SBC,
     SED, SEI, STA, STX, STY, TAX, TAY, TSX, TXA, TXS, TYA, SEC, LDA, CLD,
+    BRA
 };
 
 typedef enum dolly_instruction dolly_instruction;

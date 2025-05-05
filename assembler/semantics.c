@@ -120,7 +120,8 @@ const dolly_addressing_mode COMPATIBLE_ADDR_MODES[DOLLY_6502_INSTRUCTION_COUNT] 
     [TYA] = IMMEDIATE,
     [SEC] = IMMEDIATE,
     [LDA] = AMODE_GROUP_1,
-    [CLD] = IMMEDIATE
+    [CLD] = IMMEDIATE,
+    [BRA] = RELATIVE
 };
 
 bool dolly_asm_verify_semantics(dolly_asm_context* ctx,
