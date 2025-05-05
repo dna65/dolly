@@ -1,5 +1,5 @@
 COMPILE_FLAGS="-I. -Wall -Werror"
-CC=clang
+CC=cc
 
 # Virtual machine
 echo "Building virtual machine..." &&
