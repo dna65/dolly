@@ -80,6 +80,7 @@ void tb_hash_table_destroy(tb_hash_table* table)
         for (tb_hash_node* node = table->buckets[i]; node;) {
             if (node) {
                 tb_hash_node* next_node = node->next;
+                free(node->key);
                 free(node);
                 node = next_node;
             }

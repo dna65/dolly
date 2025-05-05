@@ -4,7 +4,7 @@
 
 struct tb_hash_node
 {
-    const char* key;
+    char* key;
     struct tb_hash_node* next;
     union {
         void* ptr_value;
