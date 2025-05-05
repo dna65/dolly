@@ -90,15 +90,24 @@ int dolly_cpu_read_instruction(dolly_cpu* cpu, const uint8_t* instruction,
     case STA:
         *target_addr = cpu->reg_a;
         return 2 + dolly_get_mode_cycles(op.a_mode, true);
-    case ADC:
-        cpu->flags.carry = (int)cpu->reg_a + target_value > 0xFF;
-        cpu->reg_a += target_value + cpu->flags.carry;
+    case ADC: {
+        int result = (int)cpu->reg_a + target_value + cpu->flags.carry;
+        cpu->flags.carry = result > 0xFF;
+        cpu->flags.overflow
+            = (cpu->reg_a ^ result) & (target_value ^ result) & 0x80;
+        cpu->reg_a = result;
         dolly_cpu_update_flags_arithmetic(cpu, cpu->reg_a);
         return 2 + dolly_get_mode_cycles(op.a_mode, page_crossed);
-    case SBC:
-        cpu->reg_a -= target_value - (1 - cpu->flags.carry);
+    }
+    case SBC: {
+        int result = (int)cpu->reg_a + (~target_value) + cpu->flags.carry;
+        cpu->flags.carry = result < 0 ? 0 : 1;
+        cpu->flags.overflow
+            = (cpu->reg_a ^ result) & (target_value ^ result) & 0x80;
+        cpu->reg_a = result;
         dolly_cpu_update_flags_arithmetic(cpu, cpu->reg_a);
         return 2 + dolly_get_mode_cycles(op.a_mode, page_crossed);
+    }
     case ORA:
         cpu->reg_a |= target_value;
         dolly_cpu_update_flags_arithmetic(cpu, cpu->reg_a);
