@@ -194,6 +194,8 @@ static bool dolly_asm_parse_multichar(dolly_asm_context* ctx,
             out->directive_type = DOLLY_ASM_DIRECTIVE_TEXT;
         } else if (strcmp_ignorecase(text, ".DATA") == 0) {
             out->directive_type = DOLLY_ASM_DIRECTIVE_DATA;
+        } else if (strcmp_ignorecase(text, ".WORD") == 0) {
+            out->directive_type = DOLLY_ASM_DIRECTIVE_WORD;
         } else {
             dolly_asm_report_error(ctx);
             printf("Unrecognised or unsupported directive '%s'\n", text);

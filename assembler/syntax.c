@@ -149,13 +149,17 @@ static void dolly_asm_read_directive(dolly_asm_context* ctx,
         *index += 1;
         break;
     }
-    case DOLLY_ASM_DIRECTIVE_BYTE: {
+    case DOLLY_ASM_DIRECTIVE_BYTE:
+    case DOLLY_ASM_DIRECTIVE_WORD: {
         size_t matches
             = dolly_asm_match_token(input, *index + 1,
                 DOLLY_ASM_TOKEN_INTEGER);
+        bool is_byte = token->directive_type == DOLLY_ASM_DIRECTIVE_BYTE;
+        const char* directive_name =  is_byte ? ".byte" : ".word";
         if (matches < 1) {
             dolly_asm_report_error_token(ctx, post_token);
-            printf("Expected at least one integer after .byte directive");
+            printf("Expected at least one integer after %s directive",
+                   directive_name);
             if (*index + 1 < input->size - 1) {
                 printf(", got %s instead",
                     dolly_asm_token_type_str(post_token));
@@ -164,13 +168,15 @@ static void dolly_asm_read_directive(dolly_asm_context* ctx,
             return;
         }
 
-        for (size_t i = 0; i < matches; ++i) {
-            int16_t val = input->tokens[*index + 1 + i].integer_value;
-            if (val > UINT8_MAX || (int16_t)val < INT8_MIN) {
-                dolly_asm_report_error_token(ctx, token);
-                printf(".byte directive requires 8-bit integers\n");
-                *index += i + 1;
-                return;
+        if (is_byte) {
+            for (size_t i = 0; i < matches; ++i) {
+                int16_t val = input->tokens[*index + 1 + i].integer_value;
+                if (val > UINT8_MAX || (int16_t)val < INT8_MIN) {
+                    dolly_asm_report_error_token(ctx, token);
+                    printf(".byte directive requires 8-bit integers\n");
+                    *index += i + 1;
+                    return;
+                }
             }
         }
 
@@ -178,7 +184,7 @@ static void dolly_asm_read_directive(dolly_asm_context* ctx,
             .directive = {
                 .directive_type = token->directive_type,
                 .data = malloc_or_abort(matches * sizeof(uint8_t)),
-                .size = matches
+                .size = matches * (is_byte ? 1 : 2)
             },
             .line = token->line,
             .column = token->column,
@@ -186,8 +192,13 @@ static void dolly_asm_read_directive(dolly_asm_context* ctx,
         };
 
         for (size_t i = 0; i < matches; ++i) {
-            node.directive.data[i]
-                = input->tokens[*index + 1 + i].integer_value;
+            uint16_t val = input->tokens[*index + 1 + i].integer_value;
+            if (is_byte) {
+                node.directive.data[i] = val;
+            } else {
+                node.directive.data[i] = (uint8_t)(val & 0x00FF);
+                node.directive.data[i + 1] = (uint8_t)(val >> 8);
+            }
         }
 
         dolly_asm_syntax_tree_add(output, &node);

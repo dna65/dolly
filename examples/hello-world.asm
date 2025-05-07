@@ -41,4 +41,4 @@ interrupt: rti
 
 .data "__interrupt_vector"
 .org $FFFE
-.byte $7F $FF
+.word $FF7F
