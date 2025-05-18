@@ -137,7 +137,7 @@ static bool dolly_asm_parse_string(dolly_asm_context* ctx,
         }
     }
     *index += i;
-    out->string_or_identifier = strdup(ctx->current_token_text.data);
+    out->string_or_identifier = strdup_or_abort(ctx->current_token_text.data);
     tb_stringbuf_clear(&ctx->current_token_text);
     return true;
 }
