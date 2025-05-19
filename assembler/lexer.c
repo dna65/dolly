@@ -3,6 +3,8 @@
 #include <ctype.h>
 #include <string.h>
 
+#include "core/def.h"
+
 /* Multi-character lexing */
 static bool dolly_asm_parse_string(dolly_asm_context* ctx,
                                    const char* start, size_t end,
@@ -25,10 +27,10 @@ static int strcmp_ignorecase(const char* a, const char* b)
 {
     size_t i;
     for (i = 0; a[i] && b[i]; ++i) {
-        if (toupper(a[i]) != toupper(b[i])) break;
+        if (toupper((uchar_t) a[i]) != toupper((uchar_t) b[i])) break;
     }
 
-    return toupper(a[i]) - toupper(b[i]);
+    return toupper((uchar_t) a[i]) - toupper((uchar_t) b[i]);
 }
 
 void init_instruction_table(void)
@@ -104,7 +106,7 @@ static bool dolly_asm_parse_string(dolly_asm_context* ctx,
     size_t i = 1;
     for (i = 1; start[i] != '"'; ++i) {
         ++ctx->column;
-        if (!isprint(start[i])) {
+        if (!isprint((uchar_t) start[i])) {
             dolly_asm_report_error(ctx);
             printf("Illegal character in string\n");
             tb_stringbuf_clear(&ctx->current_token_text);
@@ -149,7 +151,7 @@ static bool dec_str_to_int(const char* str, int* output)
     size_t i = 0;
     if (str[0] == '-' || str[0] == '+') ++i;
     for (; str[i]; ++i) {
-       if (!isdigit(str[i])) return false;
+       if (!isdigit((uchar_t) str[i])) return false;
         *output *= 10;
         *output += (str[i] - '0');
     }
@@ -164,11 +166,11 @@ static bool hex_str_to_int(const char* str, int* output)
     size_t i = 0;
     if (str[0] == '-' || str[0] == '+') ++i;
     for (; str[i]; ++i) {
-        int lowercase = tolower(str[i]);
-        if (!isdigit(str[i]) && (lowercase < 'a' || lowercase > 'f'))
+        int lowercase = tolower((uchar_t) str[i]);
+        if (!isdigit((uchar_t) str[i]) && (lowercase < 'a' || lowercase > 'f'))
             return false;
         *output *= 16;
-        *output += lowercase - (isdigit(lowercase) ? '0' : 'a' - 10);
+        *output += lowercase - (isdigit((uchar_t) lowercase) ? '0' : 'a' - 10);
     }
     if (str[0] == '-') *output *= -1;
 
@@ -210,7 +212,7 @@ static bool dolly_asm_parse_multichar(dolly_asm_context* ctx,
         char instruction_text[4] = {0};
         memcpy(instruction_text, text, 4);
         for (size_t i = 0; i < 4; ++i)
-            instruction_text[i] = toupper(instruction_text[i]);
+            instruction_text[i] = toupper((uchar_t) instruction_text[i]);
 
         const tb_hash_node* node
             = tb_hash_table_get(&INSTRUCTION_TABLE, instruction_text);
@@ -223,7 +225,7 @@ static bool dolly_asm_parse_multichar(dolly_asm_context* ctx,
 
     // TODO: Match operators & integers in a more sophisticated manner
     // Match integer
-    if (text[0] == '$' || isdigit(text[0]) || text[0] == '-'
+    if (text[0] == '$' || isdigit((uchar_t) text[0]) || text[0] == '-'
         || text[0] == '+') {
         int items_read;
         int value;
@@ -258,11 +260,11 @@ static bool dolly_asm_parse_multichar(dolly_asm_context* ctx,
     // Match identifier
     bool valid_identifier = true;
     for (size_t i = 0; i < text_len; ++i) {
-        if (i == 0 && !isalpha(text[i]) && text[0] != '_') {
+        if (i == 0 && !isalpha((uchar_t) text[i]) && text[0] != '_') {
             valid_identifier = false;
             break;
         }
-        if (!isalnum(text[i]) && text[i] != '_') {
+        if (!isalnum((uchar_t) text[i]) && text[i] != '_') {
             valid_identifier = false;
             break;
         }
