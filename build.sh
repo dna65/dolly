@@ -1,3 +1,5 @@
+#!/bin/sh
+
 COMPILE_FLAGS="-I. -Wall -Werror"
 CC=cc
 
