@@ -51,13 +51,13 @@ void tb_hash_table_add_ptr(tb_hash_table* table, const char* key,
                            void* ptr_val)
 {
     tb_hash_node* node = tb_hash_table_new_node(table, key);
-    if (node) node->ptr_value = ptr_val;
+    node->ptr_value = ptr_val;
 }
 
 void tb_hash_table_add_int(tb_hash_table* table, const char* key, int int_val)
 {
     tb_hash_node* node = tb_hash_table_new_node(table, key);
-    if (node) node->int_value = int_val;
+    node->int_value = int_val;
 }
 
 const tb_hash_node* tb_hash_table_get(const tb_hash_table* table,
@@ -78,12 +78,10 @@ void tb_hash_table_destroy(tb_hash_table* table)
 {
     for (size_t i = 0; i < table->bucket_count; ++i) {
         for (tb_hash_node* node = table->buckets[i]; node;) {
-            if (node) {
-                tb_hash_node* next_node = node->next;
-                free(node->key);
-                free(node);
-                node = next_node;
-            }
+            tb_hash_node* next_node = node->next;
+            free(node->key);
+            free(node);
+            node = next_node;
         }
     }
     free(table->buckets);
