@@ -13,13 +13,13 @@
 int main(int argc, char** argv)
 {
     if (argc < 2) {
-        printf("Usage: %s [options] <executable>\n", argv[0]);
+        printf("Usage: %s <executable> [options]\n", argv[0]);
         puts("Options:\n\t-d\tPrint debug information after execution");
         return 0;
     }
 
     bool print_debug_at_end = false;
-    for (char* const* arg = &argv[0]; *arg; ++arg) {
+    for (char* const* arg = &argv[1]; *arg; ++arg) {
         if (strcmp(*arg, "-d") == 0) print_debug_at_end = true;
     }
 
