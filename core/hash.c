@@ -8,13 +8,19 @@
 
 tb_hash_table tb_hash_table_new(size_t buckets)
 {
+    const static size_t STARTING_BUCKET_CAPACITY = 4;
+
     tb_hash_table table = {
-        .buckets = malloc_or_abort(buckets * sizeof(tb_hash_node*)),
+        .buckets = malloc_or_abort(buckets * sizeof(tb_hash_bucket)),
         .bucket_count = buckets
     };
 
     for (size_t i = 0; i < buckets; ++i) {
-        table.buckets[i] = NULL;
+        table.buckets[i].nodes = malloc_or_abort(
+            STARTING_BUCKET_CAPACITY * sizeof(tb_hash_node)
+        );
+        table.buckets[i].size = 0;
+        table.buckets[i].capacity = STARTING_BUCKET_CAPACITY;
     }
 
     return table;
@@ -34,17 +40,23 @@ static tb_hash_node* tb_hash_table_new_node(tb_hash_table* table,
     const char* key)
 {
     size_t index = compute_hash(key) % table->bucket_count;
+    tb_hash_bucket* bucket = &(table->buckets[index]);
 
-    tb_hash_node** node = &(table->buckets[index]);
-    while (*node != NULL) {
-        if (strcmp((*node)->key, key) == 0) return NULL;
-        node = &((*node)->next);
+    for (size_t i = 0; i < bucket->size; ++i) {
+        if (strcmp(bucket->nodes[i].key, key) == 0) return NULL;
     }
 
-    *node = malloc_or_abort(sizeof(tb_hash_node));
-    (*node)->key = strdup_or_abort(key);
-    (*node)->next = NULL;
-    return *node;
+    if (bucket->size >= bucket->capacity) {
+        bucket->capacity *= 2;
+        bucket->nodes = realloc_or_abort(
+            bucket->nodes,
+            bucket->capacity * sizeof(tb_hash_node)
+        );
+    }
+
+    tb_hash_node* node = &(bucket->nodes[bucket->size++]);
+    node->key = strdup_or_abort(key);
+    return node;
 }
 
 void tb_hash_table_add_ptr(tb_hash_table* table, const char* key,
@@ -64,11 +76,11 @@ const tb_hash_node* tb_hash_table_get(const tb_hash_table* table,
                                       const char* key)
 {
     size_t index = compute_hash(key) % table->bucket_count;
+    tb_hash_bucket* bucket = &(table->buckets[index]);
 
-    tb_hash_node* node = table->buckets[index];
-    while (node != NULL) {
-        if (strcmp(node->key, key) == 0) return node;
-        node = node->next;
+    for (size_t i = 0; i < bucket->size; ++i) {
+        if (strcmp(bucket->nodes[i].key, key) == 0)
+            return &(bucket->nodes[i]);
     }
 
     return NULL;
@@ -77,12 +89,8 @@ const tb_hash_node* tb_hash_table_get(const tb_hash_table* table,
 void tb_hash_table_destroy(tb_hash_table* table)
 {
     for (size_t i = 0; i < table->bucket_count; ++i) {
-        for (tb_hash_node* node = table->buckets[i]; node;) {
-            tb_hash_node* next_node = node->next;
-            free(node->key);
-            free(node);
-            node = next_node;
-        }
+        for (size_t j = 0; j < table->buckets[i].size; ++j)
+            free(table->buckets[i].nodes[j].key);
     }
     free(table->buckets);
 }

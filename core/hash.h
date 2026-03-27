@@ -5,7 +5,6 @@
 struct tb_hash_node
 {
     char* key;
-    struct tb_hash_node* next;
     union {
         void* ptr_value;
         int   int_value;
@@ -14,9 +13,18 @@ struct tb_hash_node
 
 typedef struct tb_hash_node tb_hash_node;
 
+struct tb_hash_bucket
+{
+    tb_hash_node* nodes;
+    size_t size;
+    size_t capacity;
+};
+
+typedef struct tb_hash_bucket tb_hash_bucket;
+
 struct tb_hash_table
 {
-    tb_hash_node** buckets;
+    tb_hash_bucket* buckets;
     size_t bucket_count;
 };
 
